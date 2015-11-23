@@ -32,6 +32,9 @@
 * OF SUCH DAMAGE.
 ****************************************************************************/
 
+// BPF is an NGA specification for point cloud data. The specification can be
+// found at https://nsgreg.nga.mil/doc/view?i=4202
+
 #pragma once
 
 #include "BpfHeader.hpp"
@@ -65,8 +68,9 @@ private:
     std::vector<BpfUlemFile> m_bundledFiles;
 
     virtual void processOptions(const Options& options);
-    virtual void readyTable(PointTableRef table);
-    virtual void readyFile(const std::string& filename);
+    virtual void prepared(PointTableRef table);
+    virtual void readyFile(const std::string& filename,
+        const SpatialReference& srs);
     virtual void writeView(const PointViewPtr data);
     virtual void doneFile();
 

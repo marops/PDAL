@@ -52,7 +52,8 @@ public:
 
 private:
     virtual void processOptions(const Options& options);
-    virtual void readyFile(const std::string& filename);
+    virtual void readyFile(const std::string& filename,
+        const SpatialReference& srs);
     virtual void doneFile();
     virtual void writeView(const PointViewPtr view);
 
@@ -70,8 +71,8 @@ private:
     std::string m_securityClassificationSystem;
     std::string m_imgSecurityClass;
     std::string m_imgDate;
-    pdal::Option m_aimidb;
-    pdal::Option m_acftb;
+    StringList m_aimidb;
+    StringList m_acftb;
     std::string m_imgIdentifier2;
     std::string m_sic;
     std::stringstream m_oss;

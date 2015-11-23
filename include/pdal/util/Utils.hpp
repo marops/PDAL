@@ -43,6 +43,7 @@
 #include <stdexcept>
 #include <cmath>
 #include <fstream>
+#include <iomanip>
 #include <istream>
 #include <limits>
 #include <cstring>
@@ -58,27 +59,6 @@ namespace pdal
 
 namespace Utils
 {
-    template<typename T>
-    char *as_buffer(T& data)
-        { return static_cast<char*>(static_cast<void*>(&data)); }
-
-    template<typename T>
-    char *as_buffer(T* data)
-        { return static_cast<char*>(static_cast<void*>(data)); }
-
-    template <typename C, typename T>
-    bool check_stream_state(std::basic_ios<C, T>& srtm)
-    {
-        // Test stream state bits
-        if (srtm.eof())
-            throw std::out_of_range("end of file encountered");
-        else if (srtm.fail())
-            throw std::runtime_error("non-fatal I/O error occured");
-        else if (srtm.bad())
-            throw std::runtime_error("fatal I/O error occured");
-        return true;
-    }
-
     PDAL_DLL void random_seed(unsigned int seed);
     PDAL_DLL double random(double minimum, double maximum);
     PDAL_DLL double uniform(const double& minimum=0.0f,
@@ -232,6 +212,16 @@ namespace Utils
     PDAL_DLL std::string escapeNonprinting(const std::string& s);
     PDAL_DLL std::string hexDump(const char *buf, size_t count);
 
+    template<typename PREDICATE>
+    PDAL_DLL std::string::size_type
+    extract(const std::string& s, std::string::size_type p, PREDICATE pred)
+    {
+        std::string::size_type count = 0;
+        while (pred(s[p++]))
+            count++;
+        return count;
+    }
+
     /// Split a string into substrings.  Characters matching the predicate are
     ///   discarded.
     /// \param[in] s  String to split.
@@ -301,14 +291,6 @@ namespace Utils
     template<typename T>
     std::string typeidName()
         { return Utils::demangle(typeid(T).name()); }
-
-    template<typename KEY, typename VALUE>
-    bool contains(const std::map<KEY, VALUE>& c, const KEY& v)
-        { return c.find(v) != c.end(); }
-
-    template<typename COLLECTION, typename VALUE>
-    bool contains(const COLLECTION& c, const VALUE& v)
-        { return (std::find(c.begin(), c.end(), v) != c.end()); }
 
     struct RedirectStream
     {
@@ -397,9 +379,19 @@ namespace Utils
         return oss.str();
     }
 
-    // There is an overload of std::to_string() for float and double, but
-    // its behavior is different from streaming and doesn't match what
-    // we have been doing historically.
+    inline std::string toString(double from)
+    {
+        std::ostringstream oss;
+        oss << std::setprecision(10) << from;
+        return oss.str();
+    }
+
+    inline std::string toString(float from)
+    {
+        std::ostringstream oss;
+        oss << std::setprecision(8) << from;
+        return oss.str();
+    }
 
     inline std::string toString(long long from)
         { return std::to_string(from); }

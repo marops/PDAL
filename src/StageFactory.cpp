@@ -53,6 +53,8 @@
 // readers
 #include <bpf/BpfReader.hpp>
 #include <faux/FauxReader.hpp>
+#include <gdal/GDALReader.hpp>
+#include <ilvis2/Ilvis2Reader.hpp>
 #include <las/LasReader.hpp>
 #include <optech/OptechReader.hpp>
 #include <pdal/BufferReader.hpp>
@@ -60,6 +62,7 @@
 #include <qfit/QfitReader.hpp>
 #include <sbet/SbetReader.hpp>
 #include <terrasolid/TerrasolidReader.hpp>
+#include <tindex/TIndexReader.hpp>
 
 // writers
 #include <bpf/BpfWriter.hpp>
@@ -105,6 +108,7 @@ std::string StageFactory::inferReaderDriver(const std::string& filename)
     drivers["sbet"] = "readers.sbet";
     drivers["sqlite"] = "readers.sqlite";
     drivers["sid"] = "readers.mrsid";
+    drivers["tindex"] = "readers.tindex";
 
     if (ext == "") return "";
     ext = ext.substr(1, ext.length()-1);
@@ -200,12 +204,15 @@ StageFactory::StageFactory(bool no_plugins)
     // readers
     PluginManager::initializePlugin(BpfReader_InitPlugin);
     PluginManager::initializePlugin(FauxReader_InitPlugin);
+    PluginManager::initializePlugin(GDALReader_InitPlugin);
+    PluginManager::initializePlugin(Ilvis2Reader_InitPlugin);
     PluginManager::initializePlugin(LasReader_InitPlugin);
     PluginManager::initializePlugin(OptechReader_InitPlugin);
     PluginManager::initializePlugin(PlyReader_InitPlugin);
     PluginManager::initializePlugin(QfitReader_InitPlugin);
     PluginManager::initializePlugin(SbetReader_InitPlugin);
     PluginManager::initializePlugin(TerrasolidReader_InitPlugin);
+    PluginManager::initializePlugin(TIndexReader_InitPlugin);
 
     // writers
     PluginManager::initializePlugin(BpfWriter_InitPlugin);

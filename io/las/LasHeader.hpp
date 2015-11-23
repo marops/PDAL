@@ -41,6 +41,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/property_tree/ptree.hpp>
 
+#include <pdal/Dimension.hpp>
 #include <pdal/util/Bounds.hpp>
 #include <pdal/pdal_config.hpp>
 #include <pdal/gitsha.h>
@@ -337,6 +338,12 @@ public:
         return f > 5;
     }
 
+    bool useWkt() const
+        { return (bool)((m_globalEncoding >> 4) & 1); }
+
+    bool incompatibleSrs() const
+        { return !useWkt() && has14Format(); }
+
     /// Returns true iff the file is compressed (laszip),
     /// as determined by the high bit in the point type
     bool compressed() const
@@ -366,6 +373,7 @@ public:
 
     void setSummary(const SummaryData& summary);
     bool valid() const;
+    Dimension::IdList usedDims() const;
 
     friend ILeStream& operator>>(ILeStream&, LasHeader& h);
     friend OLeStream& operator<<(OLeStream&, const LasHeader& h);

@@ -397,8 +397,8 @@ public:
         return MetadataNode(impl);
     }
 
-    MetadataNode add(const std::string& name, const std::string& value,
-        const std::string& type, const std::string& descrip = std::string())
+    MetadataNode addWithType(const std::string& name, const std::string& value,
+        const std::string& type, const std::string& descrip)
     {
         MetadataNodeImplPtr impl = m_impl->add(name);
         impl->m_type = type;
@@ -690,7 +690,7 @@ inline std::string Metadata::inferType(const std::string& val)
 {
     size_t pos;
 
-    long l;
+    long l = 0;
     try
     {
         pos = 0;

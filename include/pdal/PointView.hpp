@@ -200,8 +200,16 @@ public:
         { return m_pointTable.layout()->pointSize(); }
     std::size_t dimSize(Dimension::Id::Enum id) const
         { return m_pointTable.layout()->dimSize(id); }
+    Dimension::Type::Enum dimType(Dimension::Id::Enum id) const
+     { return m_pointTable.layout()->dimType(id);}
     DimTypeList dimTypes() const
         { return m_pointTable.layout()->dimTypes(); }
+    PointLayoutPtr layout() const
+        { return m_pointTable.layout(); }
+    void setSpatialReference(const SpatialReference& spatialRef)
+        { m_spatialReference = spatialRef; }
+    SpatialReference spatialReference() const
+        { return m_spatialReference; }
 
     /// Fill a buffer with point data specified by the dimension list.
     /// \param[in] dims  List of dimensions/types to retrieve.
@@ -253,6 +261,7 @@ protected:
     point_count_t m_size;
     int m_id;
     std::queue<PointId> m_temps;
+    SpatialReference m_spatialReference;
 
 private:
     template<typename T_IN, typename T_OUT>
@@ -267,9 +276,6 @@ private:
     inline PointId getTemp(PointId id);
     void freeTemp(PointId id)
         { m_temps.push(id); }
-
-    // Awfulness to avoid exceptions in numeric cast.
-    static bool m_ok;
 };
 
 struct PointViewLess
@@ -377,6 +383,7 @@ template <class T>
 inline T PointView::getFieldAs(Dimension::Id::Enum dim,
     PointId pointIndex) const
 {
+    assert(pointIndex < m_size);
     T retval;
     const Dimension::Detail *dd = m_pointTable.layout()->dimDetail(dim);
     double val;

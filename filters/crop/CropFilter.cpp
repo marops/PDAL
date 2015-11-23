@@ -34,6 +34,8 @@
 
 #include "CropFilter.hpp"
 
+#include <iomanip>
+
 #include <pdal/PointView.hpp>
 #include <pdal/StageFactory.hpp>
 #include <pdal/GDALUtils.hpp>
@@ -65,7 +67,6 @@ static void _GEOSErrorHandler(const char *fmt, ...)
     char buf[1024];
 
     vsnprintf(buf, sizeof(buf), fmt, args);
-    std::cerr << "GEOS Error: " << buf << std::endl;
 
     va_end(args);
 }
@@ -96,25 +97,38 @@ CropFilter::CropFilter() : pdal::Filter()
 void CropFilter::processOptions(const Options& options)
 {
     m_cropOutside = options.getValueOrDefault<bool>("outside", false);
-    m_assignedSRS = options.getValueOrDefault<SpatialReference>("a_srs");
+    m_assignedSrs = options.getValueOrDefault<SpatialReference>("a_srs");
     try
     {
         m_bounds = options.getValues<BOX2D>("bounds");
     }
     catch (boost::bad_lexical_cast)
     {
-        std::ostringstream oss;
-        oss << "Invalid bounds for " << getName() << ".  "
-            "Format: '([xmin,xmax],[ymin,ymax])'.";
-        throw pdal_error(oss.str());
+        try
+        {
+            std::vector<BOX3D>  b3d = options.getValues<BOX3D>("bounds");
+            for (auto& i: b3d)
+                m_bounds.push_back(i.to2d());
+        }
+        catch (boost::bad_lexical_cast)
+        {
+            std::ostringstream oss;
+            oss << "Invalid bounds for " << getName() << ".  "
+                "Format: '([xmin,xmax],[ymin,ymax])'.";
+            throw pdal_error(oss.str());
+        }
     }
 
     m_polys = options.getValues<std::string>("polygon");
 #ifdef PDAL_HAVE_GEOS
     if (m_polys.size())
     {
-        m_geosEnvironment = initGEOS_r(pdal::geos::_GEOSWarningHandler,
-            pdal::geos::_GEOSErrorHandler);
+        m_geoms.clear();
+        if (!m_geosEnvironment)
+        {
+            m_geosEnvironment = initGEOS_r(pdal::geos::_GEOSWarningHandler,
+                pdal::geos::_GEOSErrorHandler);
+        }
         for (std::string poly : m_polys)
         {
             GeomPkg g;
@@ -133,15 +147,6 @@ void CropFilter::processOptions(const Options& options)
             " without PDAL built with GEOS.";
         throw pdal_error(oss.str());
     }
-#endif
-}
-
-
-void CropFilter::ready(PointTableRef table)
-{
-#ifdef PDAL_HAVE_GEOS
-    for (auto& g : m_geoms)
-        preparePolygon(g, table.spatialRef());
 #endif
 }
 
@@ -184,18 +189,37 @@ void CropFilter::preparePolygon(GeomPkg& g, const SpatialReference& to)
 {
     char* out_wkt = GEOSGeomToWKT_r(m_geosEnvironment, g.m_geom);
     std::string poly(out_wkt);
-    poly = transformWkt(poly, m_assignedSRS, to);
+    poly = transformWkt(poly, m_assignedSrs, to);
     log()->get(LogLevel::Debug2) << "Ingested WKT for filters.crop: " <<
-        poly <<std::endl;
+        poly << std::endl;
     GEOSFree_r(m_geosEnvironment, out_wkt);
 
     // Store transformed geometry.
-    GEOSGeom_destroy_r(m_geosEnvironment, g.m_geom);
-    g.m_geom = GEOSGeomFromWKT_r(m_geosEnvironment, poly.c_str());
+    g.m_geomXform = GEOSGeomFromWKT_r(m_geosEnvironment, poly.c_str());
     g.m_prepGeom = GEOSPrepare_r(m_geosEnvironment, g.m_geom);
     if (!g.m_prepGeom)
         throw pdal_error("unable to prepare geometry for index-accelerated "
             "intersection");
+}
+
+
+void CropFilter::freePolygon(GeomPkg& g, bool freeBase)
+{
+    if (g.m_geom && freeBase)
+    {
+        GEOSGeom_destroy_r(m_geosEnvironment, g.m_geom);
+        g.m_geom = NULL;
+    }
+    if (g.m_prepGeom)
+    {
+        GEOSPreparedGeom_destroy_r(m_geosEnvironment, g.m_prepGeom);
+        g.m_prepGeom = NULL;
+    }
+    if (g.m_geomXform)
+    {
+        GEOSGeom_destroy_r(m_geosEnvironment, g.m_geomXform);
+        g.m_geomXform = NULL;
+    }
 }
 #endif
 
@@ -216,6 +240,7 @@ Options CropFilter::getDefaultOptions()
 PointViewSet CropFilter::run(PointViewPtr view)
 {
     PointViewSet viewSet;
+    SpatialReference srs = view->spatialReference();
 
     // Don't do anything if no bounds have been specified.
     if (m_geoms.empty() && m_bounds.empty())
@@ -225,12 +250,21 @@ PointViewSet CropFilter::run(PointViewPtr view)
     }
 
 #ifdef PDAL_HAVE_GEOS
-    for (const auto& geom : m_geoms)
+    for (auto& geom : m_geoms)
     {
+        // If this is the first time through or the SRS has changed,
+        // prepare the crop polygon.
+        if (!geom.m_prepGeom || srs != m_lastSrs)
+        {
+            freePolygon(geom, false);
+            preparePolygon(geom, srs);
+        }
+
         PointViewPtr outView = view->makeNew();
         crop(geom, *view, *outView);
         viewSet.insert(outView);
     }
+    m_lastSrs = srs;
 #endif
     for (auto& box : m_bounds)
     {
@@ -240,6 +274,7 @@ PointViewSet CropFilter::run(PointViewPtr view)
     }
     return viewSet;
 }
+
 
 void CropFilter::crop(const BOX2D& box, PointView& input, PointView& output)
 {
@@ -253,6 +288,7 @@ void CropFilter::crop(const BOX2D& box, PointView& input, PointView& output)
             output.appendPoint(input, idx);
     }
 }
+
 
 #ifdef PDAL_HAVE_GEOS
 GEOSGeometry *CropFilter::createPoint(double x, double y, double z)
@@ -273,7 +309,6 @@ GEOSGeometry *CropFilter::createPoint(double x, double y, double z)
         throw pdal_error("unable to allocate candidate test point");
     return p;
 }
-
 
 
 void CropFilter::crop(const GeomPkg& g, PointView& input, PointView& output)
@@ -310,12 +345,11 @@ void CropFilter::done(PointTableRef /*table*/)
 {
 #ifdef PDAL_HAVE_GEOS
     for (auto& g : m_geoms)
-    {
-        GEOSPreparedGeom_destroy_r(m_geosEnvironment, g.m_prepGeom);
-        GEOSGeom_destroy_r(m_geosEnvironment, g.m_geom);
-    }
+        freePolygon(g, true);
+    m_geoms.clear();
     if (m_geosEnvironment)
         finishGEOS_r(m_geosEnvironment);
+    m_geosEnvironment = 0;
 #endif
 }
 

@@ -96,7 +96,7 @@ static void finish()
 namespace Geometry
 {
 
-static std::string smoothPolygon(const std::string& wkt, double tolerance, uint32_t precision)
+static std::string smoothPolygon(const std::string& wkt, double tolerance, uint32_t precision, double area_threshold)
 {
     GEOSContextHandle_t env = init();
 
@@ -119,7 +119,6 @@ static std::string smoothPolygon(const std::string& wkt, double tolerance, uint3
 
         std::vector<GEOSGeometry*> keep_rings;
         int numRings = GEOSGetNumInteriorRings_r(env, m);
-        double area_threshold = 6 * tolerance * tolerance;
         for (int i = 0; i < numRings; ++i)
         {
             double area(0.0);

@@ -99,7 +99,14 @@ private:
     std::string m_filename;
     int m_outputFormat;
 
-    std::vector<boost::tuple<double, double, double> > m_coordinates;
+    typedef struct
+    {
+        double x;
+        double y;
+        double z;
+    } Coordinate;
+
+    std::vector<Coordinate> m_coordinates;
 };
 
 } // namespaces

@@ -107,66 +107,29 @@ Stage& RandomKernel::makeReader(Options readerOptions)
 int RandomKernel::execute()
 {
     Options readerOptions;
-    {
-        auto pred = [](char c){return strchr(",| ", c) != 0;};
 
-        std::vector<double> means;
-        StringList ms = Utils::split2(m_means, pred);
-        for (std::string m : ms)
-        {
-            double val;
-            if (Utils::fromString(m, val))
-                means.push_back(val);
-        }
-        if (means.size() > 0)
-            readerOptions.add("mean_x", means[0]);
-        if (means.size() > 1)
-            readerOptions.add("mean_y", means[1]);
-        if (means.size() > 2)
-            readerOptions.add("mean_z", means[2]);
+    setCommonOptions(readerOptions);
+    if (!m_bounds.empty())
+        readerOptions.add("bounds", m_bounds);
 
-        std::vector<double> stdevs;
-        StringList sds = Utils::split2(m_stdevs, pred);
-        for (std::string sd : sds)
-        {
-            double val;
-            if (Utils::fromString(sd, val))
-                stdevs.push_back(val);
-        }
-        if (stdevs.size() > 0)
-            readerOptions.add("stdev_x", stdevs[0]);
-        if (stdevs.size() > 1)
-            readerOptions.add("stdev_y", stdevs[1]);
-        if (stdevs.size() > 2)
-            readerOptions.add("stdev_z", stdevs[2]);
-
-        if (!m_bounds.empty())
-            readerOptions.add("bounds", m_bounds);
-
-        std::string distribution(Utils::tolower(m_distribution));
-        if (distribution == "uniform")
-            readerOptions.add("mode", "uniform");
-        else if (distribution == "normal")
-            readerOptions.add("mode", "normal");
-        else if (distribution == "random")
-            readerOptions.add("mode", "random");
-        else
-            throw pdal_error("invalid distribution: " + m_distribution);
-        readerOptions.add("num_points", m_numPointsToWrite);
-        readerOptions.add("debug", isDebug());
-        readerOptions.add("verbose", getVerboseLevel());
-    }
+    std::string distribution(Utils::tolower(m_distribution));
+    if (distribution == "uniform")
+        readerOptions.add("mode", "uniform");
+    else if (distribution == "normal")
+        readerOptions.add("mode", "normal");
+    else if (distribution == "random")
+        readerOptions.add("mode", "random");
+    else
+        throw pdal_error("invalid distribution: " + m_distribution);
+    readerOptions.add("num_points", m_numPointsToWrite);
 
     Options writerOptions;
-    {
-        writerOptions.add<std::string>("filename", m_outputFile);
-        setCommonOptions(writerOptions);
 
-        if (m_bCompress)
-        {
-            writerOptions.add<bool>("compression", true);
-        }
-    }
+    writerOptions.add("filename", m_outputFile);
+    setCommonOptions(writerOptions);
+
+    if (m_bCompress)
+        writerOptions.add("compression", true);
 
     Stage& writer = makeWriter(m_outputFile, makeReader(readerOptions));
     writer.setOptions(writerOptions);

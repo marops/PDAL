@@ -108,51 +108,53 @@ int RandomKernel::execute()
 {
     Options readerOptions;
     {
-        boost::char_separator<char> sep(SEPARATORS);
-        std::vector<double> means;
-        tokenizer mean_tokens(m_means, sep);
-        for (tokenizer::iterator t = mean_tokens.begin();
-            t != mean_tokens.end(); ++t)
-        {
-            means.push_back(boost::lexical_cast<double>(*t));
-        }
+        auto pred = [](char c){return strchr(",| ", c) != 0;};
 
-        if (means.size())
+        std::vector<double> means;
+        StringList ms = Utils::split2(m_means, pred);
+        for (std::string m : ms)
         {
-            readerOptions.add<double >("mean_x", means[0]);
-            readerOptions.add<double >("mean_y", means[1]);
-            readerOptions.add<double >("mean_z", means[2]);
+            double val;
+            if (Utils::fromString(m, val))
+                means.push_back(val);
         }
+        if (means.size() > 0)
+            readerOptions.add("mean_x", means[0]);
+        if (means.size() > 1)
+            readerOptions.add("mean_y", means[1]);
+        if (means.size() > 2)
+            readerOptions.add("mean_z", means[2]);
 
         std::vector<double> stdevs;
-        tokenizer stdev_tokens(m_stdevs, sep);
-        for (tokenizer::iterator t = stdev_tokens.begin();
-            t != stdev_tokens.end(); ++t)
+        StringList sds = Utils::split2(m_stdevs, pred);
+        for (std::string sd : sds)
         {
-            stdevs.push_back(boost::lexical_cast<double>(*t));
+            double val;
+            if (Utils::fromString(sd, val))
+                stdevs.push_back(val);
         }
-
-        if (stdevs.size())
-        {
-            readerOptions.add<double >("stdev_x", stdevs[0]);
-            readerOptions.add<double >("stdev_y", stdevs[1]);
-            readerOptions.add<double >("stdev_z", stdevs[2]);
-        }
+        if (stdevs.size() > 0)
+            readerOptions.add("stdev_x", stdevs[0]);
+        if (stdevs.size() > 1)
+            readerOptions.add("stdev_y", stdevs[1]);
+        if (stdevs.size() > 2)
+            readerOptions.add("stdev_z", stdevs[2]);
 
         if (!m_bounds.empty())
-            readerOptions.add<BOX3D >("bounds", m_bounds);
+            readerOptions.add("bounds", m_bounds);
 
-        if (boost::iequals(m_distribution, "uniform"))
-            readerOptions.add<std::string>("mode", "uniform");
-        else if (boost::iequals(m_distribution, "normal"))
-            readerOptions.add<std::string>("mode", "normal");
-        else if (boost::iequals(m_distribution, "random"))
-            readerOptions.add<std::string>("mode", "random");
+        std::string distribution(Utils::tolower(m_distribution));
+        if (distribution == "uniform")
+            readerOptions.add("mode", "uniform");
+        else if (distribution == "normal")
+            readerOptions.add("mode", "normal");
+        else if (distribution == "random")
+            readerOptions.add("mode", "random");
         else
             throw pdal_error("invalid distribution: " + m_distribution);
-        readerOptions.add<int>("num_points", m_numPointsToWrite);
-        readerOptions.add<bool>("debug", isDebug());
-        readerOptions.add<uint32_t>("verbose", getVerboseLevel());
+        readerOptions.add("num_points", m_numPointsToWrite);
+        readerOptions.add("debug", isDebug());
+        readerOptions.add("verbose", getVerboseLevel());
     }
 
     Options writerOptions;

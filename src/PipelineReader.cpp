@@ -41,8 +41,6 @@
 
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/optional.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/algorithm/string/trim.hpp>
 
 #ifndef _WIN32
 #include <wordexp.h>
@@ -161,7 +159,7 @@ Option PipelineReader::parseElement_Option(const ptree& tree)
 
     std::string name = attrs["name"];
     std::string value = tree.get_value<std::string>();
-    boost::algorithm::trim(value);
+    Utils::trim(value);
     Option option(name, value);
 
     // filenames in the XML are fixed up as follows:
@@ -352,7 +350,7 @@ void PipelineReader::parse_attributes(map_t& attrs, const ptree& tree)
     {
         std::string name = iter->first;
         std::string value = tree.get<std::string>(name);
-        boost::algorithm::trim(value);
+        Utils::trim(value);
 
         attrs[name] = value;
     }

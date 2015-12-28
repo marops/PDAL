@@ -57,71 +57,63 @@
 namespace pdal
 {
 
-// this is a static class -- do not instantiate]
-class PDAL_DLL FileUtils
+namespace FileUtils
 {
-public:
     // open existing file for reading
-    static std::istream* openFile(std::string const& filename,
-        bool asBinary=true);
+    std::istream* openFile(std::string const& filename, bool asBinary=true);
 
     // open new file for writing
-    static std::ostream* createFile(std::string const& filename,
-        bool asBinary=true);
+    std::ostream* createFile(std::string const& filename, bool asBinary=true);
 
-    static bool directoryExists(std::string const& dirname);
-    static bool createDirectory(std::string const& dirname);
-    static void deleteDirectory(std::string const& dirname);
+    bool directoryExists(std::string const& dirname);
+    bool createDirectory(std::string const& dirname);
+    void deleteDirectory(std::string const& dirname);
 
-    static void closeFile(std::ostream* ofs);
-    static void closeFile(std::istream* ifs);
+    void closeFile(std::ostream* ofs);
+    void closeFile(std::istream* ifs);
 
-    static bool deleteFile(const std::string& filename);
-    static void renameFile(const std::string& dest, const std::string& src);
-    static bool fileExists(const std::string& filename);
-    static uintmax_t fileSize(const std::string& filename);
+    bool deleteFile(const std::string& filename);
+    void renameFile(const std::string& dest, const std::string& src);
+    bool fileExists(const std::string& filename);
+    uintmax_t fileSize(const std::string& filename);
 
     // reads a file into a text string for you
-    static std::string readFileIntoString(const std::string& filename);
+    std::string readFileIntoString(const std::string& filename);
 
     // return current working dir
     // the result will always have a trailing '/'
-    static std::string getcwd();
+    std::string getcwd();
 
     // return the file component of the given path,
     // e.g. "d:/foo/bar/a.c" -> "a.c"
-    static std::string getFilename(const std::string& path);
+    std::string getFilename(const std::string& path);
 
     // return the directory component of the given path,
     // e.g. "d:/foo/bar/a.c" -> "d:/foo/bar"
     // the result will always have a trailing '/'
-    static std::string getDirectory(const std::string& path);
+    std::string getDirectory(const std::string& path);
 
     // returns true iff the path is not relative
-    static bool isAbsolutePath(const std::string& path);
+    bool isAbsolutePath(const std::string& path);
 
     // if the filename is an absolute path, just return it
     // otherwise, make it absolute (relative to current working dir)
     // and return that
-    static std::string toAbsolutePath(const std::string& filename);
+    std::string toAbsolutePath(const std::string& filename);
 
     // if the filename is an absolute path, just return it
     // otherwise, make it absolute (relative to base dir) and return that
     //
     // note: if base dir is not absolute, first make it absolute via
     // toAbsolutePath(base)
-    static std::string toAbsolutePath(const std::string& filename,
+    std::string toAbsolutePath(const std::string& filename,
         const std::string base);
     
-    static std::string readFileAsString(std::string const& filename);
-    static void fileTimes(const std::string& filename, struct tm *createTime,
+    std::string readFileAsString(std::string const& filename);
+    void fileTimes(const std::string& filename, struct tm *createTime,
         struct tm *modTime);
 
-private:
-    static std::string addTrailingSlash(std::string path);
-
-    FileUtils& operator=(const FileUtils&); // not implemented
-    FileUtils(const FileUtils&); // not implemented;
-};
+    std::string extension(const std::string& filename);
+}
 
 } // namespace pdal

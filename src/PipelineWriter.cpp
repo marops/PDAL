@@ -42,8 +42,6 @@
 
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/optional.hpp>
-#include <boost/foreach.hpp>
-#include <boost/algorithm/string.hpp>
 
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -142,7 +140,7 @@ void PipelineWriter::writePipeline(const std::string& filename) const
     const xml_parser::xml_writer_settings<char> settings(' ', 4);
 #endif
 
-    if (boost::iequals(filename, "STDOUT"))
+    if (Utils::iequals(filename, "STDOUT"))
         xml_parser::write_xml(std::cout, tree);
     else
         xml_parser::write_xml(filename, tree, std::locale(), settings);

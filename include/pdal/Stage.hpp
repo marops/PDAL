@@ -114,7 +114,6 @@ public:
     virtual std::string getName() const = 0;
     const std::vector<Stage*>& getInputs() const
         { return m_inputs; }
-    std::vector<Stage *> findStage(std::string name);
     virtual Options getDefaultOptions()
         { return Options(); }
     static Dimension::IdList getDefaultDimensions()

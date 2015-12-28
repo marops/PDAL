@@ -34,9 +34,6 @@
 
 #include <pdal/KernelSupport.hpp>
 
-#include <boost/filesystem.hpp>
-#include <boost/algorithm/string.hpp>
-
 #include <pdal/util/FileUtils.hpp>
 #include <pdal/PipelineReader.hpp>
 #include <pdal/util/Utils.hpp>
@@ -56,7 +53,7 @@ PipelineManagerPtr KernelSupport::makePipeline(const std::string& inputFile)
         PipelineReader pipeReader(*output);
         pipeReader.readPipeline(std::cin);
     }
-    else if (boost::filesystem::extension(inputFile) == ".xml")
+    else if (FileUtils::extension(inputFile) == ".xml")
     {
         PipelineReader pipeReader(*output);
         pipeReader.readPipeline(inputFile);
@@ -116,13 +113,10 @@ ShellScriptCallback::ShellScriptCallback(
     if (command.size())
     {
         m_command = command[0];
-        if (command.size() == 3)
-        {
-            major_tick = boost::lexical_cast<double>(command[1]);
-            minor_tick = boost::lexical_cast<double>(command[2]);
-        }
-        else if (command.size() == 2)
-            major_tick = boost::lexical_cast<double>(command[1]);
+        if (command.size() > 1)
+            Utils::fromString(command[1], major_tick);
+        if (command.size() > 2)
+            Utils::fromString(command[2], minor_tick);
     }
     PercentageCallback(major_tick, minor_tick);
 }
@@ -138,10 +132,11 @@ void ShellScriptCallback::callback()
         m_done = true;
     else if (currPerc >= m_lastMajorPerc + 10.0)
     {
+        std::ostringstream cmd;
         std::string output;
-        Utils::run_shell_command(m_command + " " +
-            boost::lexical_cast<std::string>(static_cast<int>(currPerc)),
-            output);
+
+        cmd << m_command << " " << (int)currPerc;
+        Utils::run_shell_command(cmd.str(), output);
         m_lastMajorPerc = currPerc;
         m_lastMinorPerc = currPerc;
     }

@@ -34,6 +34,7 @@
 
 #include <pdal/StageFactory.hpp>
 #include <pdal/PluginManager.hpp>
+#include <pdal/util/FileUtils.hpp>
 
 // filters
 #include <chipper/ChipperFilter.hpp>
@@ -74,8 +75,6 @@
 #include <text/TextWriter.hpp>
 #include <null/NullWriter.hpp>
 
-#include <boost/filesystem.hpp>
-
 #include <sstream>
 #include <string>
 #include <stdio.h> // for funcptr
@@ -90,7 +89,7 @@ std::string StageFactory::inferReaderDriver(const std::string& filename)
     if (Utils::iequals(http, "http"))
         return "readers.greyhound";
 
-    std::string ext = boost::filesystem::extension(filename);
+    std::string ext = FileUtils::extension(filename);
     std::map<std::string, std::string> drivers;
     drivers["bin"] = "readers.terrasolid";
     drivers["bpf"] = "readers.bpf";
@@ -125,7 +124,7 @@ std::string StageFactory::inferReaderDriver(const std::string& filename)
 
 std::string StageFactory::inferWriterDriver(const std::string& filename)
 {
-    std::string ext = Utils::tolower(boost::filesystem::extension(filename));
+    std::string ext = Utils::tolower(FileUtils::extension(filename));
 
     std::map<std::string, std::string> drivers;
     drivers["bpf"] = "writers.bpf";
@@ -162,7 +161,7 @@ std::string StageFactory::inferWriterDriver(const std::string& filename)
 pdal::Options StageFactory::inferWriterOptionsChanges(
     const std::string& filename)
 {
-    std::string ext = boost::filesystem::extension(filename);
+    std::string ext = FileUtils::extension(filename);
     ext = Utils::tolower(ext);
     Options options;
 

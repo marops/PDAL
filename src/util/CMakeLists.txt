@@ -10,7 +10,6 @@ set(PDAL_UTIL_HPP
     "${PDAL_INCLUDE_DIR}/pdal/util/Algorithm.hpp"
     "${PDAL_INCLUDE_DIR}/pdal/util/Bounds.hpp"
     "${PDAL_INCLUDE_DIR}/pdal/util/Charbuf.hpp"
-    "${PDAL_INCLUDE_DIR}/pdal/util/Endian.hpp"
     "${PDAL_INCLUDE_DIR}/pdal/util/Extractor.hpp"
     "${PDAL_INCLUDE_DIR}/pdal/util/FileUtils.hpp"
     "${PDAL_INCLUDE_DIR}/pdal/util/Georeference.hpp"

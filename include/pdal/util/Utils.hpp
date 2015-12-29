@@ -449,15 +449,10 @@ namespace Utils
     template<typename T>
     bool fromString(const std::string& from, T& to)
     {
-        try
-        {
-            to = boost::lexical_cast<T>(from);
-        }
-        catch (boost::bad_lexical_cast&)
-        {
-            return false;
-        }
-        return true;
+        std::istringstream iss(from);
+
+        iss >> to;
+        return !iss.fail();
     }
 
     template<>

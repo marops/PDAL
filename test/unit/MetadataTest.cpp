@@ -177,7 +177,7 @@ TEST(MetadataTest, test_construction_with_srs)
     //         AUTHORITY[\"EPSG\",\"9122\"]],
     //     AUTHORITY[\"EPSG\",\"4326\"]]");
 
-    // std::cout << boost::lexical_cast<std::string>(m.getValue<SpatialReference>());
+    // std::cout << m.getValue<SpatialReference>();
 }
 
 
@@ -185,7 +185,8 @@ TEST(MetadataTest, test_metadata_copy)
 {
     MetadataNode m;
     MetadataNode m2 = m.add("val", 2u);
-    uint32_t t = boost::lexical_cast<uint32_t>(m2.value());
+    uint32_t t;
+    Utils::fromString(m2.value(), t);
     EXPECT_EQ(t, 2u);
 }
 

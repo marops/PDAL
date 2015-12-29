@@ -34,6 +34,8 @@
 
 #pragma once
 
+#include <pdal/pdal_internal.hpp>
+
 #include <cassert>
 #include <cmath>
 #include <cstdint>
@@ -42,78 +44,68 @@
 #include <stdexcept>
 #include <string>
 
-#ifndef PDAL_DLL
-#if defined(_WIN32)
-#   define PDAL_DLL   __declspec(dllexport)
-#else
-#  if defined(USE_GCC_VISIBILITY_FLAG)
-#    define PDAL_DLL     __attribute__ ((visibility("default")))
-#  else
-#    define PDAL_DLL
-#  endif
-#endif
-#endif
-
 namespace pdal
 {
 
 namespace FileUtils
 {
     // open existing file for reading
-    std::istream* openFile(std::string const& filename, bool asBinary=true);
+    PDAL_DLL std::istream* openFile(std::string const& filename,
+        bool asBinary=true);
 
     // open new file for writing
-    std::ostream* createFile(std::string const& filename, bool asBinary=true);
+    PDAL_DLL std::ostream* createFile(std::string const& filename,
+        bool asBinary=true);
 
-    bool directoryExists(std::string const& dirname);
-    bool createDirectory(std::string const& dirname);
-    void deleteDirectory(std::string const& dirname);
+    PDAL_DLL bool directoryExists(std::string const& dirname);
+    PDAL_DLL bool createDirectory(std::string const& dirname);
+    PDAL_DLL void deleteDirectory(std::string const& dirname);
 
-    void closeFile(std::ostream* ofs);
-    void closeFile(std::istream* ifs);
+    PDAL_DLL void closeFile(std::ostream* ofs);
+    PDAL_DLL void closeFile(std::istream* ifs);
 
-    bool deleteFile(const std::string& filename);
-    void renameFile(const std::string& dest, const std::string& src);
-    bool fileExists(const std::string& filename);
-    uintmax_t fileSize(const std::string& filename);
+    PDAL_DLL bool deleteFile(const std::string& filename);
+    PDAL_DLL void renameFile(const std::string& dest, const std::string& src);
+    PDAL_DLL bool fileExists(const std::string& filename);
+    PDAL_DLL uintmax_t fileSize(const std::string& filename);
 
     // reads a file into a text string for you
-    std::string readFileIntoString(const std::string& filename);
+    PDAL_DLL std::string readFileIntoString(const std::string& filename);
 
     // return current working dir
     // the result will always have a trailing '/'
-    std::string getcwd();
+    PDAL_DLL std::string getcwd();
 
     // return the file component of the given path,
     // e.g. "d:/foo/bar/a.c" -> "a.c"
-    std::string getFilename(const std::string& path);
+    PDAL_DLL std::string getFilename(const std::string& path);
 
     // return the directory component of the given path,
     // e.g. "d:/foo/bar/a.c" -> "d:/foo/bar"
     // the result will always have a trailing '/'
-    std::string getDirectory(const std::string& path);
+    PDAL_DLL std::string getDirectory(const std::string& path);
 
     // returns true iff the path is not relative
-    bool isAbsolutePath(const std::string& path);
+    PDAL_DLL bool isAbsolutePath(const std::string& path);
 
     // if the filename is an absolute path, just return it
     // otherwise, make it absolute (relative to current working dir)
     // and return that
-    std::string toAbsolutePath(const std::string& filename);
+    PDAL_DLL std::string toAbsolutePath(const std::string& filename);
 
     // if the filename is an absolute path, just return it
     // otherwise, make it absolute (relative to base dir) and return that
     //
     // note: if base dir is not absolute, first make it absolute via
     // toAbsolutePath(base)
-    std::string toAbsolutePath(const std::string& filename,
+    PDAL_DLL std::string toAbsolutePath(const std::string& filename,
         const std::string base);
     
-    std::string readFileAsString(std::string const& filename);
-    void fileTimes(const std::string& filename, struct tm *createTime,
+    PDAL_DLL std::string readFileAsString(std::string const& filename);
+    PDAL_DLL void fileTimes(const std::string& filename, struct tm *createTime,
         struct tm *modTime);
 
-    std::string extension(const std::string& filename);
+    PDAL_DLL std::string extension(const std::string& filename);
 }
 
 } // namespace pdal

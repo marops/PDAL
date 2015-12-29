@@ -51,9 +51,6 @@
 #include <vector>
 #include <map>
 
-#include <boost/numeric/conversion/cast.hpp>
-#include <boost/lexical_cast.hpp>
-
 namespace pdal
 {
 

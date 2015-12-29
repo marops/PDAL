@@ -34,9 +34,9 @@
 
 #pragma once
 
-#include <pdal/Metadata.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/algorithm/string.hpp>
+
+#include <pdal/Metadata.hpp>
 #include <pdal/Dimension.hpp>
 #include <pdal/pdal_defines.h>
 #include <pdal/pdal_export.hpp>

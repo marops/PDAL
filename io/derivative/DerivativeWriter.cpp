@@ -38,6 +38,7 @@
 #include <pdal/util/Utils.hpp>
 
 #include <algorithm>
+#include <cfloat>
 #include <cmath>
 #include <iostream>
 #include <limits>

@@ -34,6 +34,8 @@
 
 #pragma once
 
+#include <list>
+
 #include <pdal/pdal_internal.hpp>
 #include <pdal/plugin.hpp>
 

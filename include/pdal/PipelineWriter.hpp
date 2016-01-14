@@ -58,11 +58,6 @@ namespace PipelineWriter
         const MetadataNode& input);
     void writeMetadata(boost::property_tree::ptree& tree,
         const MetadataNodeList& input);
-    /**
-
-
-    boost::property_tree::ptree getMetadataEntry(const MetadataNode& input);
-    **/
 };
 
 } // namespace pdal

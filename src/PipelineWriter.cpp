@@ -49,19 +49,26 @@ namespace
 
 void generateTags(Stage *stage, PipelineWriter::TagMap& tags)
 {
+    auto tagExists = [tags](const std::string& tag)
+    {
+        for (auto& t : tags)
+        {
+            if (t.second == tag)
+                return true;
+        }
+        return false;
+    };
+
     for (Stage *s : stage->getInputs())
         generateTags(s, tags);
-    std::string tag = stage->tagName();
-    std::string numtag;
+    std::string tag;
     for (size_t i = 1; ; ++i)
     {
-        numtag = numtag + std::to_string(i);
-        // If we haven't used this tag, we're done.
-        for (auto& t : tags)
-            if (t.second == numtag)
-                break;
+        tag = stage->tagName() + std::to_string(i);
+        if (!tagExists(tag))
+            break;
     }
-    tags[stage] = numtag;
+    tags[stage] = tag;
 }
 
 } // anonymous namespace
@@ -71,17 +78,9 @@ namespace PipelineWriter
 
 PDAL_DLL void writePipeline(Stage *stage, const std::string& filename)
 {
-    std::ostream *out;
-
-    if (Utils::iequals(filename, "STDOUT"))
-        out = &std::cout;
-    else
-    {
-        std::unique_ptr<std::ostream>
-            file(FileUtils::createFile(filename, false));
-        out = file.get();
-    }
+    std::ostream *out = FileUtils::createFile(filename, false);
     writePipeline(stage, *out);
+    FileUtils::closeFile(out);
 }
 
 PDAL_DLL void writePipeline(Stage *stage, std::ostream& strm)
@@ -89,10 +88,9 @@ PDAL_DLL void writePipeline(Stage *stage, std::ostream& strm)
     TagMap tags;
     generateTags(stage, tags);
 
-    MetadataNode m("pipeline");
-    stage->serialize(m, tags);
-
-    Utils::toJSON(m, strm);
+    MetadataNode root;
+    stage->serialize(root, tags);
+    Utils::toJSON(root, strm);
 }
 
 } // namespace PipelineWriter
